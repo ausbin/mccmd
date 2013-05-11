@@ -1,0 +1,10 @@
+# where to bind the tcp socket
+bind:
+  addr: 127.0.0.1
+  port: 5454
+
+# determines whether or not commands sent will appear to be from a 
+# server operator 
+op: true
+# permissions given to the CommandSender sending the commands
+permissions: []

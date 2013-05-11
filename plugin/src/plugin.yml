@@ -1,0 +1,3 @@
+name: mccmd
+main: io.github.ausbin.mccmd.Mccmd
+version: 0.1

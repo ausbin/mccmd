@@ -1,0 +1,15 @@
+# systemd unit for a craftbukkit server
+[Unit]
+Description=CraftBukkit
+After=network.target
+
+[Service]
+Type=simple
+User=minecraft
+Group=minecraft
+WorkingDirectory=/srv/minecraft
+# you might have to change this if you're not using the openjdk
+ExecStart=/usr/bin/java -Xmx1024M -Xms1024M -jar craftbukkit.jar --noconsole
+
+[Install]
+WantedBy=multi-user.target
