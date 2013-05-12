@@ -34,6 +34,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
 
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -137,8 +138,8 @@ public class SocketListenerThread extends Thread {
             MessageReceiver receiver = new MessageReceiver(this.config.op);
 
             // give the permissions stated in the config file (if any)
-            for (String name : this.config.permissions) {
-                receiver.addAttachment(this.parentPlugin, name, true);
+            for (Map.Entry<String,Boolean> perm : this.config.permissions.entrySet()) {
+                receiver.addAttachment(this.parentPlugin, perm.getKey(), perm.getValue());
             }
 
             Bukkit.getServer().dispatchCommand(receiver, command);

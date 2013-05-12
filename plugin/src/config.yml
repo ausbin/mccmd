@@ -7,4 +7,6 @@ bind:
 # server operator 
 op: true
 # permissions given to the CommandSender sending the commands
-permissions: []
+permissions:
+  allow:
+  deny:

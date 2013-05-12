@@ -22,7 +22,8 @@
 
 package io.github.ausbin.mccmd;
 
-import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -32,7 +33,7 @@ public class Config {
     public int port;
     public boolean op;
     public InetAddress addr;
-    public List<String> permissions;
+    public Map<String,Boolean> permissions;
 
     public void reload (FileConfiguration config) {
         // load config
@@ -48,7 +49,15 @@ public class Config {
             this.addr = InetAddress.getLoopbackAddress();
         }
 
-        this.permissions = config.getStringList("permissions");
+        this.permissions = new HashMap<String,Boolean>();
+
+        for (String perm : config.getStringList("permissions.allow")) {
+            permissions.put(perm, true);
+        }
+
+        for (String perm : config.getStringList("permissions.deny")) {
+            permissions.put(perm, false);
+        }
     }
 
     public Config (FileConfiguration config) {
