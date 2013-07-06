@@ -22,5 +22,5 @@ build () {
 
 package() {
     cd $pkgname
-    install -Dm 755 $srcdir/mccmd $pkgdir/usr/bin/mccmd
+    install -Dm 755 $srcdir/$pkgname/mccmd $pkgdir/usr/bin/mccmd
 }
