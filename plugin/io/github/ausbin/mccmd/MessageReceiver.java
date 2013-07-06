@@ -37,14 +37,17 @@ import org.bukkit.permissions.PermissibleBase;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
-public class MessageReceiver implements CommandSender, Permissible, ServerOperator {
+class MessageReceiver implements CommandSender, Permissible, ServerOperator {
     private boolean op;
+    // string representation of the remote host (e.g. "10.0.2.1:3242")
+    private String remote;
     private List<String> messages;
     private PermissibleBase perm;
     private boolean acceptingMessages;
     
-    public MessageReceiver (boolean op) {
+    public MessageReceiver (boolean op, String remote) {
         this.op = op;
+        this.remote = remote;
         this.messages = new ArrayList<String>();
         this.perm = new PermissibleBase(this);
         this.acceptingMessages = true;
@@ -81,7 +84,7 @@ public class MessageReceiver implements CommandSender, Permissible, ServerOperat
     }
 
     public String getName () {
-        return "mccmd";
+        return "mccmd@" + this.remote;
     }
 
     public Server getServer () {

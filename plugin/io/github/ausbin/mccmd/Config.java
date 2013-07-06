@@ -22,36 +22,45 @@
 
 package io.github.ausbin.mccmd;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.net.InetAddress;
-import java.io.IOException;
-import java.util.List;
-import org.bukkit.plugin.java.JavaPlugin;
+import java.net.UnknownHostException;
 
-public class Mccmd extends JavaPlugin {
-    Config config;
-    SocketListenerThread listener;
+import org.bukkit.configuration.file.FileConfiguration;
 
-    @Override
-    public void onEnable () {
-        // copy over the default config.yml
-        this.saveDefaultConfig();
+class Config {
+    public int port;
+    public boolean op;
+    public InetAddress addr;
+    public Map<String,Boolean> permissions;
 
-        this.config = new Config(this.getConfig());
-        this.listener = new SocketListenerThread(this, this.config);
-        this.listener.start();
-    }
+    public void reload (FileConfiguration config) {
+        // load config
+        this.op = config.getBoolean("op");
+        this.port = config.getInt("bind.port");
 
-    @Override
-    public void onDisable () {
-        // cause the accept() the thread is waiting on to throw a
-        // SocketException. this frees up the thread and allows it
-        // to close the socket and cannibalize itself.
         try {
-            this.listener.socket.close();
-        } catch (IOException e) {
-            // we don't care.
+            this.addr = InetAddress.getByName(config.getString("bind.addr"));
+        } catch (UnknownHostException e) {
+            // XXX log an error instead of silently failing
+            // XXX use what's in the default config.yml instead of this
+            //     (what's going on here is sort of a violation of DRY)
+            this.addr = InetAddress.getLoopbackAddress();
         }
 
-        this.listener = null;
+        this.permissions = new HashMap<String,Boolean>();
+
+        for (String perm : config.getStringList("permissions.allow")) {
+            permissions.put(perm, true);
+        }
+
+        for (String perm : config.getStringList("permissions.deny")) {
+            permissions.put(perm, false);
+        }
+    }
+
+    public Config (FileConfiguration config) {
+        this.reload(config);
     }
 }

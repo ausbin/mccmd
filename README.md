@@ -7,31 +7,27 @@ It currently consists of:
 
 1. a systemd service file for craftbukkit
 2. a java craftbukkit plugin implementing the [mccmd protocol][]
-3. a python client for the mccmd protocol
+3. a c client for the mccmd protocol
 
 All components are under the [MIT License][].
 
-An Arch PKGBUILD for the client and systemd unit can be found 
-[here][PKGBUILD]. A source tarball is [here][sourcetarball].
-
 systemd unit
 ------------
-By default, `minecraft.service` is set up to run craftbukkit in
-`/srv/minecraft/` as the user "minecraft" and the group "minecraft".
+`minecraft.service` is a template systemd unit for craftbukkit. While
+it is a complete and working service file, you should modify it to your own
+requirements. Keep in mind, though, that running the minecraft server as its
+own user and group in its own directory is probably a good idea.
 
-You should either create those or modify the content of the unit once
-it's in `/etc/systemd/system/`.
+Like all custom units, `minecraft.service` should live in
+`/etc/systemd/system/`.
 
 bukkit plugin
 -------------
-You can download a build of the mccmd bukkit plugin from 
-[here][plugindownload], but if you want to build it yourself,
-try this (you'll have to find a suitable bukkit build for yourself, of course):
+You can build the plugin with the bundled Makefile, but a (possibly outdated)
+prebuilt version is available [here][plugindownload] if you're feeling lazy.
 
     $ git clone git://github.com/ausbin/mccmd.git mccmd
-    $ cd mccmd/plugin/
-    $ curl -o bukkit.jar http://repo.bukkit.org/content/groups/public/org/bukkit/bukkit/$bukkitrel/$bukkitbuild.jar
-    $ CLASSPATH=bukkit.jar ./build.sh
+    $ make Mccmd.jar
 
 The [yaml][] config file is pretty simple. If a config file doesn't
 already exist, the defaults are copied over when the plugin is enabled.
@@ -41,39 +37,34 @@ you want.
 
 client
 ------
-The client is a crappy python 3 script that provides an interactive
-prompt for sending commands to a server (if both stdin and stdout
-are ttys). It converts [Minecraft chat control sequences][controlseq]
-to [ANSI escape sequences][]. For a list of the conversions, [look at
-the code](https://github.com/ausbin/mccmd/blob/master/mccmd.py). 
+The client is a very simple C program that reads lines from stdin and sends
+them to a mccmd server. If both stdin and stdout are ttys, it provides a cute 
+little interactive prompt with readline support.
+By default in an interactive session, minecraft chat formatting (colors and
+styles) are converted to [ANSI escape sequences][].
+For a list of the conversions, [look at the 
+code](https://github.com/ausbin/mccmd/blob/master/mccmd.c). 
 
-    $ ./mccmd.py --help
-    usage: mccmd.py [-h] [-p] [-c] [host] [port]
-
-    send commands to a craftbukkit server via the mccmd plugin and/or convert or
-    remove minecraft chat control characters.
-
-    positional arguments:
-      host           host to connect to (defaults to localhost)
-      port           port to connect to on 'host' (defaults to 5454)
-
-    optional arguments:
-      -h, --help     show this help message and exit
-      -p, --process  convert or remove minecraft chat control characters in stdin
-                     instead of connecting to a server (nullifies all other
-                     options except for -c/--nocolor)
-      -c, --nocolor  discard minecraft chat control sequences instead of
-                     converting them directly to ansi control sequences
-
+    $ git clone git://github.com/ausbin/mccmd.git mccmd
+    $ make mccmd
+    $ ./mccmd -h
+    usage: mccmd [-r|-i|-c|-h] [host [port]]
+    
+    send commands to a minecraft server.
+    (default host is localhost, default port is 5454)
+    
+    -r  remove minecraft chat formatting
+        (the default when not in a tty)
+    -i  leave minecraft chat formatting intact
+    -c  convert minecraft chat formatting into ansi
+        escape sequences (the default in a tty)
+    -h  show this message
+    
     https://github.com/ausbin/mccmd
 
-The client can also be used to process minecraft chat control sequences via
-the `--process` option. The `--nocolor` flag can be paired with it,
-which is handy for cleaning out text that was formatted for minecraft
-chat.
-
-    $ echo "§d§lpretty pink so pretty" | ./mccmd.py --process --nocolor
-    pretty pink so pretty
+The client requires a compiler that supports [C89][] and a system with 
+[POSIX][] and [readline][]. If you're on Arch, just download the [PKGBUILD][]
+into a fresh directory and run `makepkg`.
 
 protocol
 --------
@@ -116,8 +107,8 @@ For example, sending `help\n` produces:
 Notice that 524 is in text form and measures the number of bytes left
 *after* the newline that terminates the header. Also notice that
 [minecraft chat control sequences][controlseq] are intact. (The bundled
-[client][] converts them to [ANSI escape sequences][] automatically by
-default)
+[client][] converts them to [ANSI escape sequences][] by default in
+interactive sessions)
 
 [systemd]: http://freedesktop.org/wiki/Software/systemd/
 [mccmd protocol]: #protocol
@@ -125,9 +116,11 @@ default)
 [controlseq]: http://wiki.vg/Chat#Control_Sequences
 [UTF-8]: http://utf-8.com/
 [ANSI escape sequences]: https://en.wikipedia.org/wiki/ANSI_escape_code
-[plugindownload]: http://206.253.166.8/~austin/builds/mccmd.jar
+[plugindownload]: http://206.253.166.8/~austin/builds/Mccmd.jar
 [CommandSender]: http://jd.bukkit.org/dev/apidocs/org/bukkit/command/CommandSender.html
+[C89]: https://en.wikipedia.org/wiki/ANSI_C
+[POSIX]: https://en.wikipedia.org/wiki/POSIX
+[readline]: http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
 [yaml]: https://en.wikipedia.org/wiki/YAML
 [PKGBUILD]: https://raw.github.com/ausbin/mccmd/master/PKGBUILD
-[sourcetarball]: http://206.253.166.8/~austin/builds/mccmd.tar.xz
 [MIT License]: https://en.wikipedia.org/wiki/MIT_License
